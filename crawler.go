@@ -35,10 +35,10 @@ func GetNumbers() map[string]int {
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 
-	go doc.Find(confirmedPatients).Each(func(i int, s *goquery.Selection) {
+	doc.Find(confirmedPatients).Each(func(i int, s *goquery.Selection) {
 		numbers["confirmed"] = getNumberFromText(s.Text())
 	})
-	go doc.Find(diedPatients).Each(func(i int, s *goquery.Selection) {
+	doc.Find(diedPatients).Each(func(i int, s *goquery.Selection) {
 		numbers["death"] = getNumberFromText(s.Text())
 	})
 	doc.Find(curedPatients).Each(func(i int, s *goquery.Selection) {

@@ -40,7 +40,7 @@ func runBot() {
 			continue
 		}
 
-		log.Printf("[%s] %s\n", update.Message.From.UserName, update.Message.Text)
+		log.Printf("[%s](%d) %s\n", update.Message.From.UserName, update.Message.Chat.ID, update.Message.Text)
 
 		if update.Message.Text == "/start" {
 			if contains(GetChatIDs(), update.Message.Chat.ID) {
@@ -74,10 +74,6 @@ func alertIfDiff() {
 		recentTotal += num
 	}
 	for _, num := range numbers {
-		if num == 0 {
-			alertIfDiff()
-			return
-		}
 		numbersTotal += num
 	}
 	if recentTotal == numbersTotal {
@@ -91,7 +87,7 @@ func alertIfDiff() {
 	text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n따라서 현재 감염자: %d명\n\n확진자 증가수: %d명\n사망자 증가수: %d명\n완치자 증가수: %d명",
 		confirmed, death, cured, confirmed-death-cured, confirmed-recent["confirmed"], death-recent["death"], cured-recent["cured"])
 	chatIDs := GetChatIDs()
-	fmt.Println(text)
+	fmt.Println(numbers)
 	for _, chatID := range chatIDs {
 		msg := tgbotapi.NewMessage(chatID, text)
 		_, err = bot.Send(msg)
