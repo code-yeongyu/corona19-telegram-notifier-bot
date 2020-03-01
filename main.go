@@ -52,7 +52,11 @@ func runBot() {
 			bot.Send(msg)
 		} else if update.Message.Text == "/current" {
 			numbers := GetRecentNumbers()
-			text := fmt.Sprintf("현재 총 %d명의 확진자가 발생하였고, %d명이 사망하셨으며, %d명이 완치되어 %d명이 현재 감염자입니다.", numbers["confirmed"], numbers["death"], numbers["cured"], numbers["confirmed"]-numbers["death"]-numbers["cured"])
+			text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n따라서 현재 감염자: %d명", numbers["confirmed"], numbers["death"], numbers["cured"], numbers["confirmed"]-numbers["death"]-numbers["cured"])
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+			bot.Send(msg)
+		} else {
+			text := "/current: 현재 정보 받기"
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 			bot.Send(msg)
 		}
@@ -80,7 +84,7 @@ func alertIfDiff() {
 	death := numbers["death"]
 	cured := numbers["cured"]
 
-	text := fmt.Sprintf("현재 총 %d명의 확진자가 발생하였고, %d명이 사망하셨으며, %d명이 완치되어 %d명이 현재 감염자입니다.\n\n기존의 데이터에 비해 %d명의 확진자가 추가 되었고, %d명의 사망자가 추가되었으며, %d명의 완치자가 추가되었습니다.",
+	text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n따라서 현재 감염자: %d명\n\n확진자 증가수: %d명\n사망자 증가수: %d명\n완치자 증가수: %d명",
 		confirmed, death, cured, confirmed-death-cured, confirmed-recent["confirmed"], death-recent["death"], cured-recent["cured"])
 	chatIDs := GetChatIDs()
 	fmt.Println(text)
