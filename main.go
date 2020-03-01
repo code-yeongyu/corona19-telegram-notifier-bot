@@ -71,9 +71,17 @@ func alertIfDiff() {
 	numbersTotal := 0
 
 	for _, num := range recent {
+		if num == 0 {
+			alertIfDiff()
+			return
+		}
 		recentTotal += num
 	}
 	for _, num := range numbers {
+		if num == 0 {
+			alertIfDiff()
+			return
+		}
 		numbersTotal += num
 	}
 	if recentTotal == numbersTotal {
