@@ -80,3 +80,15 @@ func AddChatID(id int64) {
 	query := fmt.Sprintf("INSERT INTO chatIDs(chat_id) VALUES (%d)", id)
 	db.Exec(query)
 }
+
+// RemoveChatID removes a chat ID to the database
+func RemoveChatID(id int64) {
+	db, err := sql.Open("mysql", dbInfo)
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	query := fmt.Sprintf("DELETE FROM chatIDs where chat_id=%d", id)
+	db.Exec(query)
+}
