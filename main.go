@@ -41,22 +41,25 @@ func runBot() {
 		}
 
 		log.Printf("[%s](%d) %s\n", update.Message.From.UserName, update.Message.Chat.ID, update.Message.Text)
-
-		if update.Message.Text == "/start" {
+		switch update.Message.Text {
+		case "/start":
 			if !contains(GetChatIDs(), update.Message.Chat.ID) {
 				AddChatID(update.Message.Chat.ID)
 			}
+			text := "/help: 명령어 목록\n/current: 현재 정보 받기\n\n"
+			text += "코로나19 관련 데이터 변동시 메시지를 보내드립니다."
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "5분마다 확진자의 데이터를 확인하여 데이터에 변동이 있으면 메시지를 보내드립니다.\n소스코드는 다음의 링크에서 확인 하실 수 있습니다: https://github.com/code-yeongyu/corona19-telegram-notifier-bot")
-			bot.Send(msg)
-		} else if update.Message.Text == "/current" {
-			numbers := GetRecentNumbers()
-			text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n따라서 현재 감염자: %d명", numbers["confirmed"], numbers["death"], numbers["cured"], numbers["confirmed"]-numbers["death"]-numbers["cured"])
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 			bot.Send(msg)
-		} else {
-			text := "/current: 현재 정보 받기\n\n"
-			text += "5분마다 확진자의 데이터를 확인하여 데이터에 변동이 있으면 메시지를 보내드립니다.\n소스코드는 다음의 링크에서 확인 하실 수 있습니다: https://github.com/code-yeongyu/corona19-telegram-notifier-bot"
+		case "/help":
+			text := "/help: 명령어 목록\n/current: 현재 정보 받기\n\n"
+			text += "소스코드: https://github.com/code-yeongyu/corona19-telegram-notifier-bot"
+
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+			bot.Send(msg)
+		case "/current":
+			numbers := GetRecentNumbers()
+			text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n현재 감염자: %d명", numbers["confirmed"], numbers["death"], numbers["cured"], numbers["confirmed"]-numbers["death"]-numbers["cured"])
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 			bot.Send(msg)
 		}
@@ -94,7 +97,7 @@ func alertIfDiff() error {
 	death := numbers["death"]
 	cured := numbers["cured"]
 
-	text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n따라서 현재 감염자: %d명\n\n확진자 증가수: %d명\n사망자 증가수: %d명\n완치자 증가수: %d명",
+	text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n현재 감염자: %d명\n\n확진자 증가수: %d명\n사망자 증가수: %d명\n완치자 증가수: %d명",
 		confirmed, death, cured, confirmed-death-cured, confirmed-recent["confirmed"], death-recent["death"], cured-recent["cured"])
 	chatIDs := GetChatIDs()
 	fmt.Println(numbers)
