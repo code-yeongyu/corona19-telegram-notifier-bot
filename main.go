@@ -115,6 +115,5 @@ func main() {
 		if err == nil {
 			time.Sleep(5 * time.Minute)
 		}
-		fmt.Println("fuck")
 	}
 }
