@@ -43,12 +43,11 @@ func runBot() {
 		log.Printf("[%s](%d) %s\n", update.Message.From.UserName, update.Message.Chat.ID, update.Message.Text)
 
 		if update.Message.Text == "/start" {
-			if contains(GetChatIDs(), update.Message.Chat.ID) {
-				continue
+			if !contains(GetChatIDs(), update.Message.Chat.ID) {
+				AddChatID(update.Message.Chat.ID)
 			}
 
-			AddChatID(update.Message.Chat.ID)
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "5분마다 http://ncov.mohw.go.kr/index_main.jsp 를 확인하여 데이터에 변동이 있으면 메시지를 보내드립니다.")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "5분마다 확진자의 데이터를 확인하여 데이터에 변동이 있으면 메시지를 보내드립니다.\n소스코드는 다음의 링크에서 확인 하실 수 있습니다: https://github.com/code-yeongyu/corona19-telegram-notifier-bot")
 			bot.Send(msg)
 		} else if update.Message.Text == "/current" {
 			numbers := GetRecentNumbers()
@@ -56,36 +55,39 @@ func runBot() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 			bot.Send(msg)
 		} else {
-			text := "/current: 현재 정보 받기"
+			text := "/current: 현재 정보 받기\n\n"
+			text += "5분마다 확진자의 데이터를 확인하여 데이터에 변동이 있으면 메시지를 보내드립니다.\n소스코드는 다음의 링크에서 확인 하실 수 있습니다: https://github.com/code-yeongyu/corona19-telegram-notifier-bot"
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 			bot.Send(msg)
 		}
 	}
 }
 
-func alertIfDiff() {
+func alertIfDiff() error {
 	recent := GetRecentNumbers()
 	numbers := GetNumbers()
 
 	recentTotal := 0
 	numbersTotal := 0
 
+	if len(numbers) == 0 || len(recent) == 0 {
+		return fmt.Errorf("something includes 0")
+	}
+
 	for _, num := range recent {
 		if num == 0 {
-			alertIfDiff()
-			return
+			return fmt.Errorf("recent includes 0")
 		}
 		recentTotal += num
 	}
 	for _, num := range numbers {
 		if num == 0 {
-			alertIfDiff()
-			return
+			return fmt.Errorf("numbers includes 0")
 		}
 		numbersTotal += num
 	}
 	if recentTotal == numbersTotal {
-		return
+		return nil
 	}
 	AddNumbers(numbers)
 	confirmed := numbers["confirmed"]
@@ -103,12 +105,16 @@ func alertIfDiff() {
 			RemoveChatID(chatID)
 		}
 	}
+	return nil
 }
 
 func main() {
 	go runBot()
 	for {
-		alertIfDiff()
-		time.Sleep(5 * time.Minute)
+		err := alertIfDiff()
+		if err == nil {
+			time.Sleep(5 * time.Minute)
+		}
+		fmt.Println("fuck")
 	}
 }
