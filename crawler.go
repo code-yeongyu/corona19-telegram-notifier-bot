@@ -66,9 +66,9 @@ func GetNumbers() map[string]int {
 // 'cured' : numbers of people who cured from the corona19
 func GetNumbersFromNaver() map[string]int {
 	const URL = "https://m.search.naver.com/search.naver?query=%EC%BD%94%EB%A1%9C%EB%82%9819"
-	const confirmedPatients = "#_cs_common_production > div > div:nth-child(6) > div.state_area > div > div > div:nth-child(1) > div.circle.red.level4 > p > strong"
-	const curedPatients = "#_cs_common_production > div > div:nth-child(6) > div.state_area > div > div > div:nth-child(2) > div.circle.blue.level2 > p > strong"
-	const diedPatients = "#_cs_common_production > div > div:nth-child(6) > div.state_area > div > div > div:nth-child(2) > div.circle.black.level2 > p > strong"
+	const confirmedPatients = "#_cs_common_production > div > div.status_info > ul > li.info_01 > p"
+	const curedPatients = "#_cs_common_production > div > div.status_info > ul > li.info_03 > p"
+	const diedPatients = "#_cs_common_production > div > div.status_info > ul > li.info_04 > p"
 	numbers := make(map[string]int)
 
 	res, err := http.Get(URL)
