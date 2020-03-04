@@ -70,11 +70,27 @@ func runBot() {
 			text := "/help: 명령어 목록\n/current: 현재 정보 받기\n\n"
 			text += "코로나19 관련 데이터 변동시 메시지를 보내드립니다."
 			sendMsg(bot, text, update.Message.Chat.ID)
+		case "/start@KOR_corona19_status_robot":
+			if !contains(GetChatIDs(), update.Message.Chat.ID) {
+				AddChatID(update.Message.Chat.ID)
+			}
+			text := "/help: 명령어 목록\n/current: 현재 정보 받기\n\n"
+			text += "코로나19 관련 데이터 변동시 메시지를 보내드립니다."
+			sendMsg(bot, text, update.Message.Chat.ID)
 		case "/help":
 			text := "/help: 명령어 목록\n/current: 현재 정보 받기\n\n"
 			text += "소스코드: https://github.com/code-yeongyu/corona19-telegram-notifier-bot"
 			sendMsg(bot, text, update.Message.Chat.ID)
+		case "/help@KOR_corona19_status_robot":
+			text := "/help: 명령어 목록\n/current: 현재 정보 받기\n\n"
+			text += "소스코드: https://github.com/code-yeongyu/corona19-telegram-notifier-bot"
+			sendMsg(bot, text, update.Message.Chat.ID)
 		case "/current":
+			numbers := GetRecentNumbers()
+			text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n현재 감염자: %d명", numbers["confirmed"], numbers["death"], numbers["cured"], numbers["confirmed"]-numbers["death"]-numbers["cured"])
+
+			sendMsg(bot, text, update.Message.Chat.ID)
+		case "/current@KOR_corona19_status_robot":
 			numbers := GetRecentNumbers()
 			text := fmt.Sprintf("확진자: %d명\n사망자: %d\n완치자: %d명\n\n현재 감염자: %d명", numbers["confirmed"], numbers["death"], numbers["cured"], numbers["confirmed"]-numbers["death"]-numbers["cured"])
 
@@ -85,7 +101,7 @@ func runBot() {
 
 func alertIfDiff() error {
 	recent := GetRecentNumbers()
-	numbers := GetNumbers()
+	numbers := GetNumbersFromNaver()
 
 	recentTotal := 0
 	numbersTotal := 0
