@@ -94,6 +94,12 @@ func alertIfDiff() error {
 	if len(numbers) == 0 || len(recent) == 0 {
 		return fmt.Errorf("something includes 0")
 	}
+	for _, num := range recent {
+		if num == 0 {
+			return fmt.Errorf("recent includes 0")
+		}
+		recentTotal += num
+	}
 	for _, num := range numbers {
 		if num == 0 {
 			return fmt.Errorf("numbers includes 0")
