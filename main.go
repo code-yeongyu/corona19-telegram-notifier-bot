@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -26,27 +25,12 @@ func sendMsg(bot *tgbotapi.BotAPI, text string, receiver int64) (tgbotapi.Messag
 	return bot.Send(msg)
 }
 
-func sendTillSuccess(wg *sync.WaitGroup, bot *tgbotapi.BotAPI, text string, id int64) {
-	_, err := sendMsg(bot, fmt.Sprintf(text), id)
-	if err != nil {
-		if err.Error() == "Bad Request: chat not found" {
-			RemoveChatID(id)
-			wg.Done()
-			return
-		}
-		wg.Add(1)
-		time.Sleep(time.Second)
-		sendTillSuccess(wg, bot, text, id)
-	}
-	wg.Done()
-}
-
 func runBot() {
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("Authorized on account %s\n", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -110,23 +94,19 @@ func alertIfDiff() error {
 	if len(numbers) == 0 || len(recent) == 0 {
 		return fmt.Errorf("something includes 0")
 	}
-
-	for _, num := range recent {
-		if num == 0 {
-			return fmt.Errorf("recent includes 0")
-		}
-		recentTotal += num
-	}
 	for _, num := range numbers {
 		if num == 0 {
 			return fmt.Errorf("numbers includes 0")
 		}
 		numbersTotal += num
 	}
+	t := time.Now()
 	if recentTotal == numbersTotal {
 		return nil
 	}
+	fmt.Printf("%s ", t.Format("02-Jan 15:04:05"))
 	fmt.Println(numbers) // for monitoring
+
 	AddNumbers(numbers)
 
 	// put values
@@ -138,14 +118,20 @@ func alertIfDiff() error {
 		confirmed, death, cured, confirmed-death-cured, confirmed-recent["confirmed"], death-recent["death"], cured-recent["cured"])
 	chatIDs := GetChatIDs()
 
-	var wg sync.WaitGroup
-	wg.Add(len(chatIDs))
 	startTime := time.Now()
+
 	for i := range chatIDs {
-		go sendTillSuccess(&wg, bot, text, chatIDs[i])
+		_, err := sendMsg(bot, text, chatIDs[i])
+		if err != nil {
+			switch err.Error() {
+			case "Bad Request: chat not found":
+				RemoveChatID(chatIDs[i])
+			default:
+				time.Sleep(4 * time.Second)
+			}
+		}
 	}
 	elapsedTime := time.Since(startTime)
-	wg.Wait()
 	fmt.Printf("%f took to send to %d people.\n", elapsedTime.Seconds(), len(chatIDs))
 	return nil
 }
@@ -156,6 +142,8 @@ func main() {
 		err := alertIfDiff()
 		if err == nil {
 			time.Sleep(5 * time.Minute)
+		} else {
+			fmt.Println(err)
 		}
 	}
 }
